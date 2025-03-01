@@ -1,4 +1,3 @@
-
 import dash
 from dash import html, dcc, Output, Input, State, ctx
 import dash_cytoscape as cyto
@@ -6,115 +5,232 @@ import pandas as pd
 import numpy as np
 import time
 
-CANVAS_HEIGHT = 600
-SEGMENT_DELTA = 50
+CANVAS_HEIGHT = '70vh'
+SEGMENT_DELTA = '5vh'
 
-# Initialize Dash app with external stylesheet for hover effects
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 df = pd.read_parquet('segment_data.parquet')
 initial_elements = []
 
-# Enhanced Cytoscape stylesheet with black prediction lines
 cyto_stylesheet = [
     {'selector': 'node', 'style': {
-        'background-color': '#3498DB', 'width': '12px', 'height': '12px',
-        'label': 'data(label)', 'color': '#2C3E50', 'font-size': '12px',
-        'text-valign': 'center', 'text-halign': 'right'
+        'background-color': '#3498DB', 
+        'width': '2.5vw', 
+        'height': '2.5vw',
+        'label': 'data(label)', 
+        'color': '#2C3E50', 
+        'font-size': '2vw',
+        'text-valign': 'center', 
+        'text-halign': 'right'
     }},
     {'selector': 'edge', 'style': {
-        'line-color': '#7F8C8D', 'width': 2, 'curve-style': 'bezier'
+        'line-color': '#7F8C8D', 
+        'width': '0.4vw', 
+        'curve-style': 'bezier'
     }},
     {'selector': 'edge.last-edge', 'style': {
-        'line-color': '#27AE60', 'width': 3
+        'line-color': '#27AE60', 
+        'width': '0.6vw'
     }},
     {'selector': '.high-line', 'style': {
-        'line-color': '#2C3E50', 'width': 1, 'target-arrow-shape': 'none', 'line-style': 'dashed'
+        'line-color': '#2C3E50', 
+        'width': '0.2vw', 
+        'target-arrow-shape': 'none', 
+        'line-style': 'dashed'
     }},
     {'selector': '.low-line', 'style': {
-        'line-color': '#2C3E50', 'width': 1, 'target-arrow-shape': 'none', 'line-style': 'dashed'
+        'line-color': '#2C3E50', 
+        'width': '0.2vw', 
+        'target-arrow-shape': 'none', 
+        'line-style': 'dashed'
     }},
     {'selector': '.likely-high', 'style': {
-        'line-color': '#2C3E50', 'width': 1, 'target-arrow-shape': 'none', 'line-style': 'dashed'
+        'line-color': '#2C3E50', 
+        'width': '0.2vw', 
+        'target-arrow-shape': 'none', 
+        'line-style': 'dashed'
     }},
     {'selector': '.likely-low', 'style': {
-        'line-color': '#2C3E50', 'width': 1, 'target-arrow-shape': 'none', 'line-style': 'dashed'
+        'line-color': '#2C3E50', 
+        'width': '0.2vw', 
+        'target-arrow-shape': 'none', 
+        'line-style': 'dashed'
     }}
 ]
 
-# Polished layout
 app.layout = html.Div([
     html.Div([
+        # Header with logo and title
         html.Div([
             html.Img(src="https://via.placeholder.com/30", style={
-                'height': '30px', 'verticalAlign': 'middle', 'marginRight': '10px'
+                'height': '4vw',
+                'maxHeight': '30px',
+                'verticalAlign': 'middle',
+                'marginRight': '1vw'
             }),
             html.H1("Market Metriks", style={
-                'textAlign': 'center', 'color': '#2C3E50', 'fontFamily': 'Arial, sans-serif',
-                'marginBottom': '10px', 'fontSize': '28px', 'display': 'inline-block'
+                'color': '#2C3E50',
+                'fontFamily': 'Arial, sans-serif',
+                'fontSize': 'clamp(20px, 4vw, 28px)',
+                'margin': '0'
             })
-        ], style={'display': 'flex', 'alignItems': 'center', 'justifyContent': 'center'}),
-        html.P("statistics behind market structure patterns", style={
-            'textAlign': 'center', 'color': '#7F8C8D', 'fontSize': '14px', 'marginBottom': '20px'
+        ], style={
+            'display': 'flex',
+            'alignItems': 'center',
+            'justifyContent': 'center',
+            'padding': '1vh 0',
+            'flexWrap': 'wrap'
         }),
+        
+        html.P("statistics behind market structure patterns", style={
+            'textAlign': 'center',
+            'color': '#7F8C8D',
+            'fontSize': 'clamp(12px, 2.5vw, 14px)',
+            'margin': '1vh 0'
+        }),
+
+        # Button row
         html.Div([
             html.Button("Add Segment", id="add-btn", n_clicks=0, style={
-                'marginRight': '10px', 'backgroundColor': '#3498DB', 'color': 'white',
-                'border': 'none', 'padding': '8px 16px', 'borderRadius': '5px', 'cursor': 'pointer',
-                'transition': 'background-color 0.2s', 'opacity': '1'
+                'backgroundColor': '#3498DB',
+                'color': 'white',
+                'border': 'none',
+                'padding': 'clamp(6px, 1.5vw, 10px) clamp(12px, 3vw, 20px)',
+                'borderRadius': '5px',
+                'cursor': 'pointer',
+                'fontSize': 'clamp(12px, 2vw, 16px)',
+                'margin': '0.5vw',
+                'flex': '1 1 auto'
             }),
             html.Button("Remove Segment", id="remove-btn", n_clicks=0, style={
-                'marginRight': '10px', 'backgroundColor': '#E74C3C', 'color': 'white',
-                'border': 'none', 'padding': '8px 16px', 'borderRadius': '5px', 'cursor': 'pointer',
-                'transition': 'background-color 0.2s', 'opacity': '1'
+                'backgroundColor': '#E74C3C',
+                'color': 'white',
+                'border': 'none',
+                'padding': 'clamp(6px, 1.5vw, 10px) clamp(12px, 3vw, 20px)',
+                'borderRadius': '5px',
+                'cursor': 'pointer',
+                'fontSize': 'clamp(12px, 2vw, 16px)',
+                'margin': '0.5vw',
+                'flex': '1 1 auto'
             }),
             html.Button("Search", id="search-btn", n_clicks=0, style={
-                'marginRight': '10px', 'backgroundColor': '#27AE60', 'color': 'white',
-                'border': 'none', 'padding': '8px 16px', 'borderRadius': '5px', 'cursor': 'pointer',
-                'transition': 'background-color 0.2s', 'opacity': '1'
+                'backgroundColor': '#27AE60',
+                'color': 'white',
+                'border': 'none',
+                'padding': 'clamp(6px, 1.5vw, 10px) clamp(12px, 3vw, 20px)',
+                'borderRadius': '5px',
+                'cursor': 'pointer',
+                'fontSize': 'clamp(12px, 2vw, 16px)',
+                'margin': '0.5vw',
+                'flex': '1 1 auto'
             }),
             html.Button("Reset", id="reset-btn", n_clicks=0, style={
-                'backgroundColor': '#7F8C8D', 'color': 'white', 'border': 'none',
-                'padding': '8px 16px', 'borderRadius': '5px', 'cursor': 'pointer',
-                'transition': 'background-color 0.2s', 'opacity': '1'
+                'backgroundColor': '#7F8C8D',
+                'color': 'white',
+                'border': 'none',
+                'padding': 'clamp(6px, 1.5vw, 10px) clamp(12px, 3vw, 20px)',
+                'borderRadius': '5px',
+                'cursor': 'pointer',
+                'fontSize': 'clamp(12px, 2vw, 16px)',
+                'margin': '0.5vw',
+                'flex': '1 1 auto'
             }),
-        ], style={'textAlign': 'center', 'marginBottom': '20px'}),
+        ], style={
+            'display': 'flex',
+            'flexWrap': 'wrap',
+            'justifyContent': 'center',
+            'gap': '1vw',
+            'padding': '1vh 0',
+            'maxWidth': '100%'
+        }),
+
+        # Loading and results
         dcc.Loading(
             id="loading-search",
             type="circle",
             children=html.Div(id="search-progress", style={
-                'marginBottom': '15px', 'color': '#7F8C8D', 'fontFamily': 'Arial, sans-serif'
+                'color': '#7F8C8D',
+                'fontFamily': 'Arial, sans-serif',
+                'fontSize': 'clamp(12px, 2.5vw, 14px)',
+                'textAlign': 'center',
+                'margin': '1vh 0'
             })
         ),
+        
         html.Div(id="search-result", style={
-            'marginBottom': '20px', 'padding': '10px', 'backgroundColor': '#ECF0F1',
-            'borderRadius': '5px', 'fontFamily': 'Arial, sans-serif', 'color': '#2C3E50'
+            'padding': '2vw',
+            'backgroundColor': '#ECF0F1',
+            'borderRadius': '5px',
+            'fontFamily': 'Arial, sans-serif',
+            'color': '#2C3E50',
+            'fontSize': 'clamp(12px, 2.5vw, 14px)',
+            'margin': '1vh 0',
+            'width': '100%'
         }),
+
+        # Code output
         html.Pre(id="code-output", style={
-            'border': '1px solid #D5D8DC', 'padding': '15px', 'backgroundColor': '#F9F9F9',
-            'borderRadius': '5px', 'marginBottom': '20px', 'fontSize': '14px', 'color': '#2C3E50'
+            'border': '1px solid #D5D8DC',
+            'padding': '2vw',
+            'backgroundColor': '#F9F9F9',
+            'borderRadius': '5px',
+            'fontSize': 'clamp(12px, 2vw, 14px)',
+            'color': '#2C3E50',
+            'overflowX': 'auto',
+            'margin': '1vh 0',
+            'width': '100%'
         }),
+
+        # Cytoscape graph
         cyto.Cytoscape(
             id='cytoscape',
             elements=initial_elements,
             stylesheet=cyto_stylesheet,
             layout={'name': 'preset'},
             style={
-                'width': '800px', 'height': f'{CANVAS_HEIGHT}px', 'border': '1px solid #D5D8DC',
-                'borderRadius': '5px', 'backgroundColor': '#FFFFFF', 'margin': '0 auto'
-            }
+                'width': '100%',
+                'height': CANVAS_HEIGHT,
+                'border': '1px solid #D5D8DC',
+                'borderRadius': '5px',
+                'backgroundColor': '#FFFFFF',
+                'margin': '1vh 0'
+            },
+            responsive=True
         ),
+        
         html.Div(id="search-state", style={'display': 'none'}, children="False")
     ], style={
-        'maxWidth': '900px', 'margin': '20px auto', 'padding': '20px',
-        'backgroundColor': '#F4F6F6', 'borderRadius': '10px', 'boxShadow': '0 4px 8px rgba(0,0,0,0.1)'
+        'display': 'flex',
+        'flexDirection': 'column',
+        'alignItems': 'center',
+        'width': '90vw',
+        'maxWidth': '1200px',
+        'minWidth': '300px',
+        'margin': '2vh auto',
+        'padding': '2vw',
+        'backgroundColor': '#F4F6F6',
+        'borderRadius': '10px',
+        'boxShadow': '0 4px 8px rgba(0,0,0,0.1)'
     }),
+    
     html.Footer([
         html.P("Powered by xAI", style={
-            'textAlign': 'center', 'color': '#7F8C8D', 'fontSize': '12px', 'marginTop': '20px'
+            'textAlign': 'center',
+            'color': '#7F8C8D',
+            'fontSize': 'clamp(10px, 2vw, 12px)',
+            'margin': '1vh 0'
         })
-    ])
-])
+    ], style={
+        'width': '100%',
+        'marginTop': 'auto'
+    })
+], style={
+    'display': 'flex',
+    'flexDirection': 'column',
+    'minHeight': '100vh',
+    'padding': '0 2vw'
+})
 
 @app.callback(
     [Output('cytoscape', 'elements'),
@@ -141,7 +257,7 @@ def update_chain(n_add, n_remove, n_search, n_reset, elements, search_state):
     search_performed = search_state == "True"
 
     if trigger_id == 'reset-btn':
-        return [], "", "", False, False, False, False, "False"  # Reset everything
+        return [], "", "", False, False, False, False, "False"
 
     if trigger_id in ['add-btn', 'remove-btn']:
         if search_performed:
@@ -152,8 +268,8 @@ def update_chain(n_add, n_remove, n_search, n_reset, elements, search_state):
         
         if trigger_id == 'add-btn':
             if not nodes:
-                node0 = {'data': {'id': 'node-0', 'chainIndex': 0, 'label': 'Start'}, 'position': {'x': 100, 'y': 300}, 'grabbable': True}
-                node1 = {'data': {'id': 'node-1', 'chainIndex': 1, 'label': ''}, 'position': {'x': 300, 'y': 300 - SEGMENT_DELTA}, 'grabbable': True}
+                node0 = {'data': {'id': 'node-0', 'chainIndex': 0, 'label': 'Start'}, 'position': {'x': 20, 'y': 300}, 'grabbable': True}
+                node1 = {'data': {'id': 'node-1', 'chainIndex': 1, 'label': ''}, 'position': {'x': 100, 'y': 250}, 'grabbable': True}
                 edge1 = {'data': {'id': 'edge-1', 'source': 'node-0', 'target': 'node-1'}, 'classes': 'last-edge'}
                 elements = [node0, node1, edge1]
             else:
@@ -164,9 +280,9 @@ def update_chain(n_add, n_remove, n_search, n_reset, elements, search_state):
                 last_chain_index = last_node['data']['chainIndex']
                 nodes_sorted = sorted(nodes, key=lambda n: n["data"]["chainIndex"])
                 previous_direction = "up" if len(nodes_sorted) < 2 else "up" if nodes_sorted[-1]["position"]["y"] < nodes_sorted[-2]["position"]["y"] else "down"
-                new_y = last_node["position"]["y"] + SEGMENT_DELTA if previous_direction == "up" else last_node["position"]["y"] - SEGMENT_DELTA
+                new_y = last_node["position"]["y"] + 50 if previous_direction == "up" else last_node["position"]["y"] - 50
                 new_chain_index = last_chain_index + 1
-                new_node = {'data': {'id': f'node-{new_chain_index}', 'chainIndex': new_chain_index, 'label': ''}, 'position': {'x': last_node['position']['x'] + 200, 'y': new_y}, 'grabbable': True}
+                new_node = {'data': {'id': f'node-{new_chain_index}', 'chainIndex': new_chain_index, 'label': ''}, 'position': {'x': last_node['position']['x'] + 80, 'y': new_y}, 'grabbable': True}
                 new_edge = {'data': {'id': f'edge-{new_chain_index}', 'source': last_node['data']['id'], 'target': new_node['data']['id']}, 'classes': 'last-edge'}
                 elements.extend([new_node, new_edge])
         elif trigger_id == 'remove-btn':
@@ -199,14 +315,14 @@ def update_chain(n_add, n_remove, n_search, n_reset, elements, search_state):
         finalized_nodes = nodes[:-1]
         pattern_relations = []
         for i in range(len(finalized_nodes) - 1):
-            start_y = CANVAS_HEIGHT - finalized_nodes[i]["position"]["y"]
-            end_y = CANVAS_HEIGHT - finalized_nodes[i + 1]["position"]["y"]
+            start_y = 600 - finalized_nodes[i]["position"]["y"]
+            end_y = 600 - finalized_nodes[i + 1]["position"]["y"]
             if i == 0:
                 direction = "up" if end_y > start_y else "down" if end_y < start_y else "flat"
                 pattern_relations.append({"direction": direction})
             else:
-                prev_start = CANVAS_HEIGHT - finalized_nodes[i - 1]["position"]["y"]
-                prev_end = CANVAS_HEIGHT - finalized_nodes[i]["position"]["y"]
+                prev_start = 600 - finalized_nodes[i - 1]["position"]["y"]
+                prev_end = 600 - finalized_nodes[i]["position"]["y"]
                 relation = {
                     "start_vs_prev_start": "above" if start_y > prev_start else "below" if start_y < prev_start else "equal",
                     "end_vs_prev_start": "above" if end_y > prev_start else "below" if end_y < prev_start else "equal",
@@ -253,12 +369,12 @@ def update_chain(n_add, n_remove, n_search, n_reset, elements, search_state):
                     next_end_price = end_prices[i + window_size]
                     last_segment_start = window_start[-1]
                     last_segment_end = window_end[-1]
-                    if last_segment_start > last_segment_end:  # Down segment
+                    if last_segment_start > last_segment_end:
                         if next_end_price > last_segment_start:
                             trade_above_count += 1
                         elif next_end_price < last_segment_start:
                             trade_below_count += 1
-                    else:  # Up segment
+                    else:
                         if next_end_price < last_segment_start:
                             trade_below_count += 1
                         elif next_end_price > last_segment_start:
@@ -323,8 +439,8 @@ def generate_code(elements):
         return "above" if cur > ref else "below" if cur < ref else "equal"
 
     for i in range(1, len(finalized_nodes)):
-        start_y = CANVAS_HEIGHT - finalized_nodes[i-1]["position"]["y"]
-        end_y = CANVAS_HEIGHT - finalized_nodes[i]["position"]["y"]
+        start_y = 600 - finalized_nodes[i-1]["position"]["y"]
+        end_y = 600 - finalized_nodes[i]["position"]["y"]
         current_dir = "up" if end_y > start_y else "down" if end_y < start_y else "flat"
         seg_dirs.append(current_dir)
         if i == 1:
@@ -333,14 +449,15 @@ def generate_code(elements):
                 line += "  *** ZIGZAG RULE BROKEN: flat segment not allowed ***"
             output_lines.append(line)
         else:
-            prev_start = CANVAS_HEIGHT - finalized_nodes[i-2]["position"]["y"]
-            prev_end = CANVAS_HEIGHT - finalized_nodes[i-1]["position"]["y"]
+            prev_start = 600 - finalized_nodes[i-2]["position"]["y"]
+            prev_end = 600 - finalized_nodes[i-1]["position"]["y"]
             line = (f"Segment {i}: start is {compare_relation(start_y, prev_start)} previous start; "
                     f"end is {compare_relation(end_y, prev_start)} previous start, {compare_relation(end_y, prev_end)} previous end")
             if seg_dirs[-1] == seg_dirs[-2]:
                 line += f"  *** ZIGZAG RULE BROKEN: consecutive segments are {seg_dirs[-1]} ***"
             output_lines.append(line)
     return "\n".join(output_lines)
+
 
 if __name__ == '__main__':
     # app.run_server(debug=True, port = 8050)
