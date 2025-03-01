@@ -2,3 +2,5 @@ dash
 dash-cytoscape
 pandas
 numpy
+pyarrow
+fastparquet
